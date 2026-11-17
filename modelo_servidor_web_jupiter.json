@@ -1,6 +1,5 @@
 {
   "modelName": "modelo_servidor_web_jupiter",
-  "timeUnit": "Milliseconds",
   "places": [
     {
       "name": "P_Chegada",
@@ -22,9 +21,9 @@
     },
     {
       "name": "P_TransCap",
-      "initialMarking": 20,
-      "stringMarking": "C_FILA",
-      "initialStringMarking": "C_FILA",
+      "initialMarking": 28,
+      "stringMarking": "C_SIST",
+      "initialStringMarking": "C_SIST",
       "id": "P_TransCap",
       "x": 460,
       "y": 110
@@ -87,32 +86,44 @@
       "type": "DOUBLE",
       "value": "20",
       "id": "param-C_FILA"
+    },
+    {
+      "name": "C_SIST",
+      "type": "DOUBLE",
+      "value": "28",
+      "id": "param-C_SIST"
     }
   ],
   "rewardMeasures": [
     {
       "name": "U",
-      "expression": "(E{#P_Trans} / P_WS) * 100"
+      "expression": "(E{#P_Trans} / P_WS) * 100",
+      "id": "metric-U"
     },
     {
       "name": "DP",
-      "expression": "P{#P_TransCap == 0} * 100"
+      "expression": "P{#P_TransCap == 0} * 100",
+      "id": "metric-DP"
     },
     {
       "name": "TP",
-      "expression": "(E{#P_Trans} / TS) * 1000"
+      "expression": "(E{#P_Trans} / TS) * 1000",
+      "id": "metric-TP"
     },
     {
       "name": "MRT",
-      "expression": "((E{#P_Fila_Web} + E{#P_Trans}) * AD) / (1 - P{#P_TransCap == 0})"
+      "expression": "((E{#P_Fila_Web} + E{#P_Trans}) * AD) / (1 - P{#P_TransCap == 0})",
+      "id": "metric-MRT"
     },
     {
       "name": "MQT",
-      "expression": "(E{#P_Fila_Web} * AD) / (1 - P{#P_TransCap == 0})"
+      "expression": "(E{#P_Fila_Web} * AD) / (1 - P{#P_TransCap == 0})",
+      "id": "metric-MQT"
     },
     {
       "name": "MPT",
-      "expression": "(E{#P_Trans} * AD) / (1 - P{#P_TransCap == 0})"
+      "expression": "(E{#P_Trans} * AD) / (1 - P{#P_TransCap == 0})",
+      "id": "metric-MPT"
     }
   ],
   "transitions": [
@@ -122,32 +133,15 @@
       "firingPolicy": "SINGLE_SERVER",
       "raceType": "RACE_WITH_ENABLING_MEMORY",
       "priority": 1,
+      "inputArcs": [],
+      "outputArcs": [],
+      "inhibitorArcs": [],
       "distribution": {
         "type": "exponential",
         "parameters": {
           "Mean delay": "AD"
         }
       },
-      "inputArcs": [
-        {
-          "type": "INPUT",
-          "place": "P_Chegada",
-          "multiplicity": "1"
-        }
-      ],
-      "outputArcs": [
-        {
-          "type": "OUTPUT",
-          "place": "P_Chegada",
-          "multiplicity": "1"
-        },
-        {
-          "type": "OUTPUT",
-          "place": "P_Fila",
-          "multiplicity": "1"
-        }
-      ],
-      "inhibitorArcs": [],
       "id": "AD",
       "x": 190,
       "y": 240
@@ -158,27 +152,10 @@
       "firingPolicy": "SINGLE_SERVER",
       "raceType": "RACE_WITH_ENABLING_MEMORY",
       "priority": 1,
-      "weight": 1,
-      "inputArcs": [
-        {
-          "type": "INPUT",
-          "place": "P_Fila",
-          "multiplicity": "1"
-        },
-        {
-          "type": "INPUT",
-          "place": "P_TransCap",
-          "multiplicity": "1"
-        }
-      ],
-      "outputArcs": [
-        {
-          "type": "OUTPUT",
-          "place": "P_Fila_Web",
-          "multiplicity": "1"
-        }
-      ],
+      "inputArcs": [],
+      "outputArcs": [],
       "inhibitorArcs": [],
+      "weight": 1,
       "id": "T1",
       "x": 370,
       "y": 240
@@ -189,22 +166,10 @@
       "firingPolicy": "SINGLE_SERVER",
       "raceType": "RACE_WITH_ENABLING_MEMORY",
       "priority": 1,
-      "weight": 1,
-      "inputArcs": [
-        {
-          "type": "INPUT",
-          "place": "P_Fila",
-          "multiplicity": "1"
-        }
-      ],
+      "inputArcs": [],
       "outputArcs": [],
-      "inhibitorArcs": [
-        {
-          "type": "INHIBITOR",
-          "place": "P_TransCap",
-          "multiplicity": "1"
-        }
-      ],
+      "inhibitorArcs": [],
+      "weight": 1,
       "id": "T_Descarte",
       "x": 280,
       "y": 350
@@ -215,32 +180,10 @@
       "firingPolicy": "SINGLE_SERVER",
       "raceType": "RACE_WITH_ENABLING_MEMORY",
       "priority": 2,
-      "weight": 1,
-      "inputArcs": [
-        {
-          "type": "INPUT",
-          "place": "P_Fila_Web",
-          "multiplicity": "1"
-        },
-        {
-          "type": "INPUT",
-          "place": "P_TransProc",
-          "multiplicity": "1"
-        }
-      ],
-      "outputArcs": [
-        {
-          "type": "OUTPUT",
-          "place": "P_TransCap",
-          "multiplicity": "1"
-        },
-        {
-          "type": "OUTPUT",
-          "place": "P_Trans",
-          "multiplicity": "1"
-        }
-      ],
+      "inputArcs": [],
+      "outputArcs": [],
       "inhibitorArcs": [],
+      "weight": 1,
       "id": "T2",
       "x": 560,
       "y": 240
@@ -248,33 +191,125 @@
     {
       "name": "T_Trans",
       "type": "TIMED",
-      "firingPolicy": "INFINITE_SERVER",
+      "firingPolicy": "INFINITY_SERVER",
       "raceType": "RACE_WITH_ENABLING_MEMORY",
       "priority": 1,
+      "inputArcs": [],
+      "outputArcs": [],
+      "inhibitorArcs": [],
       "distribution": {
         "type": "exponential",
         "parameters": {
           "Mean delay": "TS"
         }
       },
-      "inputArcs": [
-        {
-          "type": "INPUT",
-          "place": "P_Trans",
-          "multiplicity": "1"
-        }
-      ],
-      "outputArcs": [
-        {
-          "type": "OUTPUT",
-          "place": "P_TransProc",
-          "multiplicity": "1"
-        }
-      ],
-      "inhibitorArcs": [],
       "id": "T_Trans",
       "x": 760,
       "y": 240
     }
-  ]
+  ],
+  "visualElements": [],
+  "arcs": [
+    {
+      "id": "AD-in-P_Chegada",
+      "source": "P_Chegada",
+      "target": "AD",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "AD-out-P_Chegada",
+      "source": "AD",
+      "target": "P_Chegada",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "AD-out-P_Fila",
+      "source": "AD",
+      "target": "P_Fila",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T1-in-P_Fila",
+      "source": "P_Fila",
+      "target": "T1",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T1-in-P_TransCap",
+      "source": "P_TransCap",
+      "target": "T1",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T1-out-P_Fila_Web",
+      "source": "T1",
+      "target": "P_Fila_Web",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T_Descarte-in-P_Fila",
+      "source": "P_Fila",
+      "target": "T_Descarte",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T_Descarte-inh-P_TransCap",
+      "source": "P_TransCap",
+      "target": "T_Descarte",
+      "type": "inhibitor",
+      "weight": "1"
+    },
+    {
+      "id": "T2-in-P_Fila_Web",
+      "source": "P_Fila_Web",
+      "target": "T2",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T2-in-P_TransProc",
+      "source": "P_TransProc",
+      "target": "T2",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T_Trans-out-P_TransCap",
+      "source": "T_Trans",
+      "target": "P_TransCap",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T2-out-P_Trans",
+      "source": "T2",
+      "target": "P_Trans",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T_Trans-in-P_Trans",
+      "source": "P_Trans",
+      "target": "T_Trans",
+      "type": "normal",
+      "weight": "1"
+    },
+    {
+      "id": "T_Trans-out-P_TransProc",
+      "source": "T_Trans",
+      "target": "P_TransProc",
+      "type": "normal",
+      "weight": "1"
+    }
+  ],
+  "chartSquare": false,
+  "timeUnit": "Milliseconds",
+  "executions": []
 }
