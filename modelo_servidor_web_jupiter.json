@@ -1,0 +1,199 @@
+{
+  "modelName": "Servidor Web com Controle de Admissao e Fila Limitada",
+  "description": "Modelo SPN (Contexto 1 - Servidor Web) para avaliacao de desempenho (TP, MRT, MQT, U, DP, MPT) nos experimentos E1 a E4.",
+  "definitions": [
+    {
+      "name": "AR",
+      "type": "REAL",
+      "value": 0.40,
+      "description": "Taxa de chegada de requisicoes HTTP (req/ms)"
+    },
+    {
+      "name": "AD",
+      "type": "REAL",
+      "value": 2.50,
+      "expression": "1 / AR",
+      "description": "Tempo medio entre chegadas de requisicoes (ms)"
+    },
+    {
+      "name": "TS",
+      "type": "REAL",
+      "value": 20.0,
+      "description": "Tempo medio de servico por requisicao em cada nucleo (ms)"
+    },
+    {
+      "name": "P_WS",
+      "type": "INT",
+      "value": 8,
+      "description": "Capacidade de processamento (total de nucleos/servidores Web)"
+    },
+    {
+      "name": "C_FILA",
+      "type": "INT",
+      "value": 20,
+      "description": "Capacidade maxima da fila de espera (buffer de admissao)"
+    }
+  ],
+  "places": [
+    {
+      "id": "P_Chegada",
+      "name": "P_Chegada",
+      "initialMarking": "1",
+      "x": 100,
+      "y": 240,
+      "description": "Fonte geradora de requisicoes HTTP dos clientes"
+    },
+    {
+      "id": "P_Fila",
+      "name": "P_Fila",
+      "initialMarking": "0",
+      "x": 280,
+      "y": 240,
+      "description": "Requisicao recem-chegada aguardando admissao na fila"
+    },
+    {
+      "id": "P_TransCap",
+      "name": "P_TransCap",
+      "initialMarking": "C_FILA",
+      "x": 460,
+      "y": 110,
+      "description": "Vagas disponiveis na fila de espera do Servidor Web"
+    },
+    {
+      "id": "P_Fila_Web",
+      "name": "P_Fila_Web",
+      "initialMarking": "0",
+      "x": 460,
+      "y": 240,
+      "description": "Requisicoes aceitas aguardando na fila FCFS do Servidor Web"
+    },
+    {
+      "id": "P_TransProc",
+      "name": "P_TransProc",
+      "initialMarking": "P_WS",
+      "x": 660,
+      "y": 110,
+      "description": "Nucleos/servidores Web livres para processamento"
+    },
+    {
+      "id": "P_Trans",
+      "name": "P_Trans",
+      "initialMarking": "0",
+      "x": 660,
+      "y": 240,
+      "description": "Requisicoes em processamento ativo nos servidores Web"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "AD",
+      "name": "AD",
+      "type": "TIMED",
+      "distribution": "EXPONENTIAL",
+      "delay": "AD",
+      "serverMode": "SINGLE_SERVER",
+      "x": 190,
+      "y": 240,
+      "description": "Gera chegadas de requisicoes com intervalo medio AD = 1/AR ms"
+    },
+    {
+      "id": "T1",
+      "name": "T1",
+      "type": "IMMEDIATE",
+      "weight": 1.0,
+      "priority": 1,
+      "guard": "#P_TransCap > 0",
+      "x": 370,
+      "y": 240,
+      "description": "Admite a requisicao na fila Web consumindo 1 vaga de P_TransCap"
+    },
+    {
+      "id": "T_Descarte",
+      "name": "T_Descarte",
+      "type": "IMMEDIATE",
+      "weight": 1.0,
+      "priority": 1,
+      "guard": "#P_TransCap == 0",
+      "x": 280,
+      "y": 350,
+      "description": "Descarta a requisicao (HTTP 503) quando a fila esta cheia (#P_TransCap == 0)"
+    },
+    {
+      "id": "T2",
+      "name": "T2",
+      "type": "IMMEDIATE",
+      "weight": 1.0,
+      "priority": 2,
+      "guard": "",
+      "x": 560,
+      "y": 240,
+      "description": "Aloca 1 servidor livre de P_TransProc, libera 1 vaga em P_TransCap e inicia servico em P_Trans"
+    },
+    {
+      "id": "T_Trans",
+      "name": "T_Trans",
+      "type": "TIMED",
+      "distribution": "EXPONENTIAL",
+      "delay": "TS",
+      "serverMode": "INFINITE_SERVER",
+      "x": 760,
+      "y": 240,
+      "description": "Processamento paralelo nos servidores Web com tempo medio TS ms"
+    }
+  ],
+  "arcs": [
+    { "from": "P_Chegada", "to": "AD", "weight": 1, "type": "NORMAL" },
+    { "from": "AD", "to": "P_Chegada", "weight": 1, "type": "NORMAL" },
+    { "from": "AD", "to": "P_Fila", "weight": 1, "type": "NORMAL" },
+    { "from": "P_Fila", "to": "T1", "weight": 1, "type": "NORMAL" },
+    { "from": "P_TransCap", "to": "T1", "weight": 1, "type": "NORMAL" },
+    { "from": "T1", "to": "P_Fila_Web", "weight": 1, "type": "NORMAL" },
+    { "from": "P_Fila", "to": "T_Descarte", "weight": 1, "type": "NORMAL" },
+    { "from": "P_TransCap", "to": "T_Descarte", "weight": 1, "type": "INHIBITOR" },
+    { "from": "P_Fila_Web", "to": "T2", "weight": 1, "type": "NORMAL" },
+    { "from": "P_TransProc", "to": "T2", "weight": 1, "type": "NORMAL" },
+    { "from": "T2", "to": "P_TransCap", "weight": 1, "type": "NORMAL" },
+    { "from": "T2", "to": "P_Trans", "weight": 1, "type": "NORMAL" },
+    { "from": "P_Trans", "to": "T_Trans", "weight": 1, "type": "NORMAL" },
+    { "from": "T_Trans", "to": "P_TransProc", "weight": 1, "type": "NORMAL" }
+  ],
+  "metrics": [
+    {
+      "name": "U",
+      "unit": "%",
+      "expression": "(E{#P_Trans} / P_WS) * 100",
+      "description": "Utilizacao media dos servidores Web (%)"
+    },
+    {
+      "name": "DP",
+      "unit": "%",
+      "expression": "P{(#P_Fila > 0) and (#P_TransCap == 0)} * 100",
+      "alternateExpression": "P{#P_TransCap == 0} * 100",
+      "description": "Probabilidade de descarte por fila cheia (%)"
+    },
+    {
+      "name": "TP",
+      "unit": "req/s",
+      "expression": "(E{#P_Trans} / TS) * 1000",
+      "description": "Vazao efetiva de requisicoes concluidas por segundo (req/s)"
+    },
+    {
+      "name": "MRT",
+      "unit": "ms",
+      "expression": "((E{#P_Fila_Web} + E{#P_Trans}) * AD) / (1 - P{#P_TransCap == 0})",
+      "description": "Tempo medio de resposta total (ms)"
+    },
+    {
+      "name": "MQT",
+      "unit": "ms",
+      "expression": "(E{#P_Fila_Web} * AD) / (1 - P{#P_TransCap == 0})",
+      "description": "Tempo medio de espera na fila (ms)"
+    },
+    {
+      "name": "MPT",
+      "unit": "ms",
+      "expression": "(E{#P_Trans} * AD) / (1 - P{#P_TransCap == 0})",
+      "description": "Tempo medio na etapa de processamento (ms)"
+    }
+  ]
+}
