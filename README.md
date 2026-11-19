@@ -11,7 +11,6 @@
 - `run_experiments.py`: Script Python para execução dos experimentos E1, E2, E3 e E4 e exportação dos CSVs e figuras.
 - `results/`: Tabelas em formato CSV com os resultados de cada bateria de testes (`E1_taxa_chegada.csv`, `E2_capacidade_processamento.csv`, `E3_capacidade_fila.csv`, `E4_cenarios_combinados.csv` e `tabela_consolidada.csv`).
 - `figures/`: Diagramas e gráficos gerados para os experimentos.
-- `artigo/`: Código-fonte LaTeX (`main.tex`) e figuras do artigo no formato IEEE.
 
 ## Modelo SPN e Métricas
 
